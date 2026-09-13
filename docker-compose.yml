@@ -1,0 +1,14 @@
+services:
+  warden-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      WARDEN_DOWNLOAD_MODELS: "0"
+      WARDEN_TOXICITY_REPO_ID: "Abhid234/warden-toxic-bert"
+      WARDEN_TOXICITY_THRESHOLD: "0.40"
+      WARDEN_NSFW_THRESHOLD: "0.50"
+      WARDEN_SEMANTIC_THRESHOLD: "0.25"
+    volumes:
+      - ./models:/app/models
+      - ./data/ledger:/app/data/ledger

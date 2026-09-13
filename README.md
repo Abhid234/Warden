@@ -18,6 +18,22 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 Open `http://127.0.0.1:8000/docs` for the interactive API documentation.
 
+## Run with Docker
+
+For local Docker, keep the downloaded checkpoints in `models/` and run:
+
+```powershell
+docker compose up --build
+```
+
+The Compose service mounts `models/` and `data/ledger/` into the container and
+serves the API at `http://127.0.0.1:8000`.
+
+For a clean host such as Railway, the container downloads the public checkpoints
+at startup. Set `WARDEN_TOXICITY_REPO_ID` to a Hugging Face repository containing
+the fine-tuned `toxic-bert-finetuned` checkpoint. The current repository is
+`Abhid234/warden-toxic-bert`. Set `HF_TOKEN` only when that repository is private.
+
 The API loads local model folders from `models/` at startup. It does not persist submitted images. Moderation events are appended to `data/ledger/events.jsonl` for the transparency ledger; keep this generated file local.
 
 ## Ledger endpoints

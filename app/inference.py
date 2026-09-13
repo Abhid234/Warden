@@ -29,12 +29,15 @@ class WardenInference:
     def __init__(self) -> None:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.toxicity_path = ROOT / "models" / "toxic-bert-finetuned"
+        self.hinglish_toxicity_path = ROOT / "models" / "hinglish-toxicity-classifier"
         self.nsfw_path = ROOT / "models" / "nsfw-image-detection"
         self.semantic_path = ROOT / "models" / "semantic-filter"
         self.image_semantic_path = ROOT / "models" / "image-semantic"
 
         self.toxicity_tokenizer: Any = None
         self.toxicity_model: Any = None
+        self.hinglish_tokenizer: Any = None
+        self.hinglish_model: Any = None
         self.image_processor: Any = None
         self.image_model: Any = None
         self.embedder: Any = None
@@ -58,6 +61,17 @@ class WardenInference:
             self.toxicity_model = AutoModelForSequenceClassification.from_pretrained(
                 self.toxicity_path, local_files_only=True
             ).to(self.device).eval()
+
+            # Optional second model for Romanized Hindi/English code-mixed
+            # text. English Toxic-BERT remains the primary model; this model
+            # adds language-specific evidence when downloaded locally.
+            if self.hinglish_toxicity_path.exists():
+                self.hinglish_tokenizer = AutoTokenizer.from_pretrained(
+                    self.hinglish_toxicity_path, local_files_only=True
+                )
+                self.hinglish_model = AutoModelForSequenceClassification.from_pretrained(
+                    self.hinglish_toxicity_path, local_files_only=True
+                ).to(self.device).eval()
 
         if nsfw:
             self._require_model(self.nsfw_path)
@@ -99,11 +113,75 @@ class WardenInference:
             label: round(float(probabilities[index]), 4)
             for index, label in enumerate(LABELS)
         }
-        is_toxic = categories["toxic"] >= threshold
+        hinglish_categories: dict[str, float] = {}
+        hinglish_score = 0.0
+        if self.hinglish_model is not None and self.hinglish_tokenizer is not None:
+            hinglish_inputs = self.hinglish_tokenizer(
+                text, return_tensors="pt", truncation=True, max_length=128
+            )
+            hinglish_inputs = {
+                key: value.to(self.device) for key, value in hinglish_inputs.items()
+            }
+            with torch.inference_mode():
+                hinglish_probabilities = torch.sigmoid(
+                    self.hinglish_model(**hinglish_inputs).logits[0]
+                ).cpu()
+            id2label = self.hinglish_model.config.id2label
+            hinglish_categories = {
+                str(id2label.get(index, id2label.get(str(index), f"label_{index}"))).lower(): round(
+                    float(hinglish_probabilities[index]), 4
+                )
+                for index in range(len(hinglish_probabilities))
+            }
+            # The checkpoint's labels are read from config rather than
+            # hard-coded because community checkpoints may name the same
+            # concept differently (for example profanity vs obscene).
+            # This checkpoint's entire output space is toxic-content labels,
+            # so every returned label contributes to the ensemble score.
+            hinglish_score = max(hinglish_categories.values(), default=0.0)
+
+            # Preserve Warden's six-category response while allowing the
+            # Hinglish model to strengthen matching categories when labels
+            # clearly correspond.
+            aliases = {
+                "toxic": (
+                    "toxic", "toxicity", "abuse", "harassment",
+                    "profanity_vulgarity", "targeted_abuse_harassment",
+                    "discriminatory_hate_speech", "caste",
+                    "communal_religious", "regional_xenophobic",
+                    "misogyny_gender",
+                ),
+                "obscene": ("obscene", "profanity", "profanity_vulgarity"),
+                "threat": ("threat",),
+                "insult": ("insult", "targeted_abuse_harassment"),
+                "identity_hate": (
+                    "identity_hate", "identity-hate", "hate",
+                    "discriminatory_hate_speech", "caste",
+                    "communal_religious", "regional_xenophobic",
+                    "misogyny_gender",
+                ),
+            }
+            for category, names in aliases.items():
+                matching = [
+                    score for label, score in hinglish_categories.items()
+                    if any(name in label for name in names)
+                ]
+                if matching:
+                    categories[category] = round(
+                        max(categories[category], max(matching)), 4
+                    )
+
+        is_toxic = max(categories["toxic"], hinglish_score) >= threshold
         return {
             "text": text,
             "toxicity_score": categories["toxic"],
             "categories": categories,
+            "hinglish_toxicity_score": round(hinglish_score, 4),
+            "hinglish_categories": hinglish_categories,
+            "models_used": [
+                "toxic-bert-finetuned",
+                *( ["hinglish-toxicity-classifier"] if self.hinglish_model is not None else [] ),
+            ],
             "trigger_detail": {"type": "span", "value": text},
             "is_toxic": is_toxic,
             "action": "warn" if is_toxic else "allow",

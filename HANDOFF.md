@@ -15,6 +15,14 @@ Local ML assets, datasets, and notebooks now exist for the four planned features
 
 The backend can be started from the repository root with `python -m uvicorn app.main:app --host 127.0.0.1 --port 8000` after installing `requirements-backend.txt`.
 
+Docker deployment files now exist: `Dockerfile`, `docker-entrypoint.sh`,
+`download_models.py`, `.dockerignore`, `docker-compose.yml`, and `railway.json`.
+Local Compose mounts the gitignored model and ledger directories; hosted startup
+downloads public checkpoints from Hugging Face.
+
+The Docker CPU image installs both CPU PyTorch and CPU TorchVision because the
+NSFW image processor requires TorchVision at startup.
+
 The current work is focused on the official browser extension. The files shown in
 some editor tabs as `extension/popup.js`, `extension/content.js`, and similar
 root-level paths are stale tabs from the deleted prototype. The maintained
@@ -38,6 +46,8 @@ extension is only under `extension/warden-extension/warden-extension/`.
 - The old rewriter dataset and checkpoints remain as historical experiment artifacts, but rewriting is no longer part of the product flow.
 - `app/main.py` exposes `/health`, `/toxicity`, `/prepost`, `/semantic`, and `/image/nsfw`.
 - `app/inference.py` loads the local models once at startup and keeps API validation separate from model inference.
+- `app/inference.py` optionally loads `darelphilip/hinglish-toxicity-classifier` from `models/hinglish-toxicity-classifier`. When present, it runs alongside Toxic-BERT and contributes Hinglish/code-mixed toxicity evidence; English Toxic-BERT remains active.
+- The downloaded Hinglish checkpoint exposes seven labels: profanity/vulgarity, targeted abuse/harassment, discriminatory hate speech, caste, communal/religious, regional/xenophobic, and misogyny/gender. These labels are explicitly normalized into Warden's toxicity categories.
 - `app/inference.py` also loads local `openai/clip-vit-base-patch32` from `models/image-semantic` for direct image-to-preference embeddings.
 - `/semantic/image` compares an uploaded image with the user's preference in shared CLIP embedding space. This is separate from the sexual-content NSFW classifier.
 - `app/ledger.py` provides append-only JSONL storage and session summaries for moderation events.
@@ -59,6 +69,9 @@ extension is only under `extension/warden-extension/warden-extension/`.
 - The backend dependencies, especially `sentence-transformers`, must be installed before starting the service.
 - The NSFW model is primarily a sexual-content detector. It should not be presented as a reliable gore or violence detector.
 - The semantic threshold is provisional; `0.25` is not a measured final threshold.
+- The Hinglish classifier is optimized for Romanized/code-mixed Hindi-English, not guaranteed for formal Devanagari-only Hindi. Its per-label thresholds and ensemble behavior still need evaluation on Warden's Hindi/Hinglish examples.
+- The fine-tuned English toxicity checkpoint is local-only unless it is uploaded to a Hugging Face repository and supplied through `WARDEN_TOXICITY_REPO_ID`; Docker does not assume a repository for it.
+- The fine-tuned English toxicity checkpoint is uploaded as `Abhid234/warden-toxic-bert`; use that value for `WARDEN_TOXICITY_REPO_ID` in hosted deployment.
 - Rewriting was removed from the product because the generated text was unreliable and often copied the toxic input. The system should warn the user and let them decide how to revise it.
 - Model weights and large datasets are local assets and should not be committed to git.
 - `data/ledger/events.jsonl` is generated session data and should remain local rather than being committed as it grows.
@@ -66,9 +79,9 @@ extension is only under `extension/warden-extension/warden-extension/`.
 
 ## Next 3 things
 
-1. Remove old Warden entries in `chrome://extensions`, load `extension/warden-extension/warden-extension/` as unpacked, and verify the service worker/content console reports version `0.1.3`.
-2. Start the backend and smoke-test Instagram/Reddit posts, comments, scroll recycling, permanent reveal, ledger events, compose warnings, and semantic preferences.
-3. Adjust selectors for the live DOM and create held-out test cases to measure false positives, false negatives, threshold calibration, and inference latency.
+1. Run `docker compose up --build` locally and smoke-test `/health`, `/toxicity`, `/semantic`, image routes, and the ledger.
+2. For Railway, configure a persistent model volume/cache and `WARDEN_TOXICITY_REPO_ID` (plus `HF_TOKEN` if private), then deploy the Dockerfile.
+3. Load the official extension and smoke-test Instagram/Reddit posts, comments, scroll recycling, permanent reveal, compose warnings, and semantic preferences against the container URL.
 
 ## Decisions (and why)
 

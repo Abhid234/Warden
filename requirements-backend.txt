@@ -3,6 +3,8 @@ uvicorn[standard]>=0.30,<1
 python-multipart>=0.0.9,<1
 pydantic>=2,<3
 torch
+torchvision
 transformers
+huggingface-hub
 sentence-transformers
 pillow
