@@ -4,6 +4,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     HF_HOME=/opt/huggingface \
     TRANSFORMERS_CACHE=/opt/huggingface \
+    HF_MAX_WORKERS=1 \
     PORT=8000
 
 WORKDIR /app

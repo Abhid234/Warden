@@ -96,6 +96,10 @@ The Docker image installs CPU PyTorch together with CPU TorchVision. TorchVision
 is required by the NSFW image processor even though the container does not use a
 GPU.
 
+Model downloads use one Hugging Face worker by default via `HF_MAX_WORKERS=1`.
+This is slower than the default concurrent download but avoids Railway
+out-of-memory kills while downloading the large Toxic-BERT and Hinglish files.
+
 The backend now has `Dockerfile`, `docker-entrypoint.sh`, `download_models.py`,
 `.dockerignore`, `docker-compose.yml`, and `railway.json`.
 

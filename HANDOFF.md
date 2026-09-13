@@ -22,6 +22,9 @@ downloads public checkpoints from Hugging Face.
 
 The Docker CPU image installs both CPU PyTorch and CPU TorchVision because the
 NSFW image processor requires TorchVision at startup.
+- `download_models.py` limits Hugging Face snapshot downloads to one worker by
+  default (`HF_MAX_WORKERS=1`) because Railway killed the container during the
+  default eight-file concurrent downloads.
 
 The current work is focused on the official browser extension. The files shown in
 some editor tabs as `extension/popup.js`, `extension/content.js`, and similar

@@ -42,6 +42,10 @@ def download(repo_id: str, destination: Path) -> None:
         repo_id=repo_id,
         local_dir=str(destination),
         token=os.getenv("HF_TOKEN") or None,
+        # Railway's small instances can be OOM-killed by the default eight
+        # concurrent file downloads. One worker is slower but resumable and
+        # keeps peak memory low.
+        max_workers=max(1, int(os.getenv("HF_MAX_WORKERS", "1"))),
     )
 
 
