@@ -70,7 +70,7 @@ extension is only under `extension/warden-extension/warden-extension/`.
 - The NSFW model is primarily a sexual-content detector. It should not be presented as a reliable gore or violence detector.
 - The semantic threshold is provisional; `0.25` is not a measured final threshold.
 - The Hinglish classifier is optimized for Romanized/code-mixed Hindi-English, not guaranteed for formal Devanagari-only Hindi. Its per-label thresholds and ensemble behavior still need evaluation on Warden's Hindi/Hinglish examples.
-- The fine-tuned English toxicity checkpoint is local-only unless it is uploaded to a Hugging Face repository and supplied through `WARDEN_TOXICITY_REPO_ID`; Docker does not assume a repository for it.
+- The fine-tuned English toxicity checkpoint is uploaded as `Abhid234/warden-toxic-bert`; `download_models.py` uses this as the default repository and also accepts `WARDEN_TOXICITY_REPO_ID` as an override.
 - The fine-tuned English toxicity checkpoint is uploaded as `Abhid234/warden-toxic-bert`; use that value for `WARDEN_TOXICITY_REPO_ID` in hosted deployment.
 - Rewriting was removed from the product because the generated text was unreliable and often copied the toxic input. The system should warn the user and let them decide how to revise it.
 - Model weights and large datasets are local assets and should not be committed to git.

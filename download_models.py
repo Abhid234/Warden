@@ -54,7 +54,9 @@ def main() -> None:
             download(repo_id, MODELS / directory)
 
         toxicity_path = MODELS / "toxic-bert-finetuned"
-        toxicity_repo = os.getenv("WARDEN_TOXICITY_REPO_ID", "").strip()
+        toxicity_repo = os.getenv(
+            "WARDEN_TOXICITY_REPO_ID", "Abhid234/warden-toxic-bert"
+        ).strip()
         if toxicity_repo:
             download(toxicity_repo, toxicity_path)
 

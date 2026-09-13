@@ -112,9 +112,10 @@ Compose sets `WARDEN_DOWNLOAD_MODELS=0` and mounts the existing gitignored
 For Railway or another clean host, startup downloads the public Hugging Face
 models. The fine-tuned English toxicity model is not committed to git, so the
 deployment must either mount `models/toxic-bert-finetuned` or set
-`WARDEN_TOXICITY_REPO_ID=Abhid234/warden-toxic-bert` to the Hugging Face
-repository containing that checkpoint. Set `HF_TOKEN` as well if the
-repository is private.
+`download_models.py` defaults to
+`WARDEN_TOXICITY_REPO_ID=Abhid234/warden-toxic-bert`. You can override it with
+the same Railway variable if needed. Set `HF_TOKEN` as well if the repository
+is private.
 
 Model downloads may make the first startup slow. Never claim the Docker image
 contains weights unless they were actually built into or mounted into it.
