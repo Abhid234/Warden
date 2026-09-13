@@ -74,6 +74,7 @@ extension is only under `extension/warden-extension/warden-extension/`.
 - The semantic threshold is provisional; `0.25` is not a measured final threshold.
 - The Hinglish classifier is optimized for Romanized/code-mixed Hindi-English, not guaranteed for formal Devanagari-only Hindi. Its per-label thresholds and ensemble behavior still need evaluation on Warden's Hindi/Hinglish examples.
 - The fine-tuned English toxicity checkpoint is uploaded as `Abhid234/warden-toxic-bert`; `download_models.py` uses this as the default repository and also accepts `WARDEN_TOXICITY_REPO_ID` as an override.
+- Railway deployment is live at `https://warden-production-074e.up.railway.app`; the official extension classifier now targets this backend and the manifest includes its host permission.
 - The fine-tuned English toxicity checkpoint is uploaded as `Abhid234/warden-toxic-bert`; use that value for `WARDEN_TOXICITY_REPO_ID` in hosted deployment.
 - Rewriting was removed from the product because the generated text was unreliable and often copied the toxic input. The system should warn the user and let them decide how to revise it.
 - Model weights and large datasets are local assets and should not be committed to git.

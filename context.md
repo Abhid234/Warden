@@ -103,6 +103,15 @@ out-of-memory kills while downloading the large Toxic-BERT and Hinglish files.
 The backend now has `Dockerfile`, `docker-entrypoint.sh`, `download_models.py`,
 `.dockerignore`, `docker-compose.yml`, and `railway.json`.
 
+The deployed backend URL is:
+
+```text
+https://warden-production-074e.up.railway.app
+```
+
+The root path is not an API route; use `/health`, `/toxicity`, `/semantic`,
+and the other documented endpoints.
+
 For local Docker, run from the repository root:
 
 ```powershell

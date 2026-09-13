@@ -3,7 +3,7 @@
  * All failures fail open: content remains visible when the backend is unavailable.
  */
 
-const WARDEN_API_BASE = 'http://127.0.0.1:8000';
+const WARDEN_API_BASE = 'https://warden-production-074e.up.railway.app';
 let wardenSessionPromise;
 const semanticCache = new Map();
 
