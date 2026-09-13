@@ -73,6 +73,10 @@ const WardenEngine = (() => {
         return { shouldBlur: true, strength: 'strong', matchedCategory: 'comments' };
       }
     }
+    const semanticPreference = settings.semanticPreference?.trim().toLowerCase();
+    if (semanticPreference && lower.includes(semanticPreference)) {
+      return { shouldBlur: true, strength: 'strong', matchedCategory: 'semantic' };
+    }
     if (textScores.semantic?.action === 'hide' || textScores.semantic?.similarity >= 0.25) {
       return { shouldBlur: true, strength: 'strong', matchedCategory: 'semantic' };
     }
@@ -214,6 +218,11 @@ const WardenEngine = (() => {
       element.matches(config.commentSelector) ||
       element.closest(config.commentAncestorSelector || 'shreddit-comment,[data-testid="comment"],article ul li')
     ));
+  }
+
+  function textBlurTarget(element, config, isComment) {
+    if (!isComment || !config.commentTargetSelector) return element;
+    return element.closest(config.commentTargetSelector) || element;
   }
 
   function installComposeGuard() {
@@ -395,7 +404,7 @@ const WardenEngine = (() => {
       post.dataset.wardenCacheKey = cacheKey;
       if (cached.decision.shouldBlur && !cached.revealed && post.dataset.wardenRevealed !== 'true') {
         const isComment = isCommentElement(el, config);
-        const blurTarget = el;
+        const blurTarget = textBlurTarget(el, config, isComment);
         if (blurTarget.dataset.wardenRevealed === 'true') return;
         blurTarget.dataset.wardenCacheKey = cacheKey;
         applyTextBlur(
@@ -437,7 +446,7 @@ const WardenEngine = (() => {
       if (decision.shouldBlur && decision.matchedCategory === 'semantic') toxicityEventId = semanticEventId;
     }
     if (decision.shouldBlur) {
-      const blurTarget = el;
+      const blurTarget = textBlurTarget(el, config, isComment);
       blurTarget.dataset.wardenCacheKey = cacheKey;
       applyTextBlur(
         blurTarget,

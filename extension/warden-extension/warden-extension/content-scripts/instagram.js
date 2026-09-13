@@ -13,12 +13,13 @@
   WardenEngine.startWatching({
     mediaSelector: 'article img, article video',
     textSelector: settings.platforms.instagram.filterText
-      ? 'article span[dir="auto"], [role="dialog"] span[dir="auto"]' // captions + comment text
+      ? 'article span[dir="auto"], [role="dialog"] span[dir="auto"], [role="dialog"] p' // captions + comment text
       : null,
     // Comments can be rendered in a dialog or in later list items. Captions
     // are kept on the post path so their semantic match blurs the post.
     commentSelector: 'article ul li:not(:first-child) span[dir="auto"]',
     commentAncestorSelector: 'article ul li:not(:first-child)',
+    commentTargetSelector: 'article ul li:not(:first-child), [role="dialog"] li',
     isComment: (element) => {
       if (element.closest('[role="dialog"]')) return true;
       const listItem = element.closest('article ul li');
