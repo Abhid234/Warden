@@ -139,3 +139,157 @@ If a task references a file, path, model name, or endpoint not confirmed to
 exist in the actual repo, stop and check the real file rather than assuming
 it matches this document or HANDOFF.md exactly — both are written as guidance,
 not as a live snapshot of the code.
+
+
+## PPT / presentation context
+
+Use this section as the source of truth for a presentation about Warden. The
+presentation should explain the product as a reader-controlled wellbeing layer,
+not as a replacement for the social platform or a system that silently decides
+what people are allowed to see.
+
+### One-sentence pitch
+
+Warden is an AI/ML layer between a person and an online community that detects
+harmful, unwanted, or personally triggering content before it reaches the
+reader, then lets the reader decide whether to reveal it.
+
+### Problem
+
+Most moderation happens after content is posted or reported. A reader still has
+to encounter the content first. People also have different boundaries: one
+person may want to avoid violence, another may want to avoid sexual imagery,
+and another may mainly want help with harassment or toxic comments.
+
+### Product goal
+
+Give the reader control over their feed using local/open-source ML models and a
+browser extension. Warden should warn, blur, or hide content without deleting
+it. The user can reveal blurred content and can change preferences over time.
+
+### End-to-end architecture
+
+```text
+Instagram / Reddit page
+        |
+        v
+Browser extension observes the DOM and extracts structured content
+        |
+        v
+Railway-hosted FastAPI backend
+        |
+        +--> Toxicity models: English Toxic-BERT + Hinglish classifier
+        +--> Image safety model: NSFW image classifier
+        +--> Semantic text model: MiniLM embeddings
+        +--> Semantic image model: CLIP image/text embeddings
+        |
+        v
+Decision: allow, warn, blur, or hide
+        |
+        +--> Extension updates the page and preserves user reveal state
+        +--> Ledger records the decision and optional user override
+```
+
+### Suggested slide order
+
+1. Title: Warden - an AI/ML layer between you and the noise.
+2. Problem: readers encounter harmful content before moderation can help.
+3. Goal: reader-side, preference-driven control instead of one global rule.
+4. Architecture: extension -> FastAPI -> models -> decision -> UI/ledger.
+5. DOM retrieval: how a post or comment becomes structured input.
+6. Toxicity detection: English and Hinglish/code-mixed text scoring.
+7. Image protection: NSFW classification plus image semantic matching.
+8. Semantic preferences: natural-language preferences converted to embeddings.
+9. Pre-post protection: warn a user before a toxic comment is submitted.
+10. Browser experience: post blur, comment-only blur, reveal, and scrolling cache.
+11. Transparency ledger: decisions, trigger details, and user overrides.
+12. Deployment: Dockerized FastAPI service running on Railway.
+13. Live demo: health check, API calls, feed filtering, reveal, and compose warn.
+14. Limitations and next steps: calibration, more platforms, and evaluation.
+
+### Extension responsibilities
+
+The content script watches dynamically loaded feed content with a MutationObserver
+and rescans when the platform adds or reuses nodes. It extracts fields such as
+platform, post id, URL, author, title, caption, visible text, alt text, image
+URLs, and comment text. Posts are sent as one structured item; comments are
+sent as separate items so only the matching comment is blurred.
+
+The extension applies the result to the page. NSFW or semantic matches can blur
+the whole post. Toxic comments are scoped to the comment. A revealed item is
+marked so a later scroll or DOM rerender does not immediately blur it again.
+The cache reduces repeated backend requests and helps restore the blur after
+virtualized feeds recycle DOM nodes. If the backend is unavailable, the
+extension fails safely and does not remove content.
+
+### Model pipeline
+
+- Toxicity: the fine-tuned `toxic-bert-finetuned` model scores English text.
+- Hinglish: `darelphilip/hinglish-toxicity-classifier` adds scores for
+  Romanized/code-mixed Hindi and English, including harassment and hate-related
+  categories.
+- NSFW images: `Falconsai/nsfw_image_detection` detects sexual or explicit
+  imagery. It should not be presented as a dedicated gore or violence detector.
+- Text semantics: `sentence-transformers/all-MiniLM-L6-v2` compares a user
+  preference with post text, captions, titles, alt text, and account context.
+- Image semantics: CLIP compares the user preference with the image itself,
+  allowing image-only content to participate in semantic filtering.
+- The current semantic image threshold is 0.25 and should be described as a
+  practical provisional threshold, not as a measured universal accuracy result.
+
+### Backend API surface
+
+The deployed service is:
+
+`https://warden-production-074e.up.railway.app`
+
+Important routes for the demo are:
+
+- `GET /health` - confirms the service and reports the active device.
+- `POST /toxicity` - scores text with both toxicity models.
+- `POST /prepost` - checks a draft before posting.
+- `POST /semantic` - compares a preference with structured post text.
+- `POST /image/nsfw` - checks an uploaded image for NSFW content.
+- `POST /semantic/image` - compares a preference with an uploaded image.
+- `POST /ledger/event`, `/ledger/summary`, `/ledger/override` - transparency
+  and user-control endpoints.
+
+### Docker and Railway story
+
+The backend is packaged in a CPU Docker image. At startup it downloads public
+Hugging Face checkpoints and the uploaded Warden toxicity checkpoint when they
+are not already available. Railway supplies the port through `PORT`; Uvicorn
+serves `app.main:app`; `/health` is the deployment health check. Model and
+ledger directories are mounted or persisted so restarts do not need to repeat
+all work. Startup can be slow and CPU inference is a known tradeoff.
+
+### Transparency and user control
+
+Every decision can expose the model score, categories, trigger detail, action,
+and model names. The ledger records the event without silently changing the
+user's content. An override records that the user chose to reveal or keep an
+item hidden. This makes the system explainable and gives the final decision
+back to the reader.
+
+### Live demo script
+
+1. Open `/health` and show the Railway service is running.
+2. Call `/toxicity` with an English abusive sentence and show `action: warn`.
+3. Call `/toxicity` with a Romanized Hindi sentence and show the Hinglish score.
+4. Open Instagram or Reddit with the extension enabled.
+5. Show a semantic preference such as avoiding war or violence.
+6. Show a matching post blurred, then reveal it with the user control.
+7. Show a toxic comment where only the comment is blurred, not the full post.
+8. Open the popup or ledger view and show the decision/override record.
+9. Type a toxic draft comment and show the pre-post warning before submission.
+
+### Honest limitations
+
+Thresholds are currently hand-tuned and need calibration with user-labeled
+relevant/irrelevant examples. The NSFW model is not a complete gore, violence,
+or medical-image classifier. The Hinglish model is strongest on Romanized or
+code-mixed text and should not be described as full Hindi-language coverage.
+Social-media DOM structures change, so platform adapters need maintenance.
+Railway runs the current service on CPU, so latency and memory are practical
+constraints. The next evaluation should measure false positives, false
+negatives, latency, model download time, and the effect of repeated scrolling.
