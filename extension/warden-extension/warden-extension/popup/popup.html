@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Warden</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup">
+    <div class="popup-head">
+      <span class="status-dot" id="status-dot"></span>
+      <div>
+        <div class="name">Warden</div>
+        <div class="sub">Watching Instagram &amp; Reddit</div>
+      </div>
+      <button class="gear-btn" id="open-settings" title="Open full settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H4a2 2 0 010-4h.09A1.65 1.65 0 005.6 9.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H10a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+    </div>
+
+    <div class="master-row">
+      <div>
+        <div class="label" id="master-label">Filtering is on</div>
+        <div class="hint">Applies as you scroll — nothing is stored</div>
+      </div>
+      <button class="toggle" id="toggle-master"><span class="knob"></span></button>
+    </div>
+
+    <div class="gauge-block">
+      <p class="popup-section-label">Sensitivity</p>
+      <div class="gauge-row">
+        <svg id="gauge" width="86" height="52" viewBox="0 0 200 110"></svg>
+        <div class="gauge-readout">
+          <div class="level-name" id="level-name">Standard</div>
+          <div class="level-desc" id="level-desc"></div>
+        </div>
+      </div>
+      <div class="level-dots" id="level-dots"></div>
+    </div>
+
+    <p class="popup-section-label">Platforms</p>
+    <div class="platform-row">
+      <div class="platform-icon ig">IG</div>
+      <div class="platform-name">Instagram</div>
+      <div class="platform-count"><b id="count-instagram">0</b> blurred today</div>
+    </div>
+    <div class="platform-row">
+      <div class="platform-icon rd">R</div>
+      <div class="platform-name">Reddit</div>
+      <div class="platform-count"><b id="count-reddit">0</b> blurred today</div>
+    </div>
+
+    <div class="ledger-block">
+      <p class="popup-section-label">This session</p>
+      <div id="ledger-total" class="ledger-total">Loading ledger...</div>
+      <div id="ledger-recent"></div>
+    </div>
+
+    <button class="popup-footer-btn" id="open-settings-2">Open full settings</button>
+  </div>
+
+  <script src="../lib/storage.js"></script>
+  <script src="../lib/gauge.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

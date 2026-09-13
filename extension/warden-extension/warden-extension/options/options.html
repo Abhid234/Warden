@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Warden settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<div class="settings-shell">
+  <div class="rail">
+    <div class="rail-head">
+      <div class="name">Warden</div>
+      <div class="sub">Content sensitivity</div>
+    </div>
+    <button class="rail-item active" data-panel="p-sensitivity">Sensitivity</button>
+    <button class="rail-item" data-panel="p-platforms">Platforms</button>
+    <button class="rail-item" data-panel="p-words">Word filters</button>
+    <button class="rail-item" data-panel="p-activity">Activity</button>
+  </div>
+
+  <div class="panel" id="p-sensitivity">
+    <h2>Sensitivity</h2>
+    <p class="lede">One dial sets how cautious Warden is overall — from letting everything through to blurring anything flagged, even mild cases.</p>
+    <div class="gauge-demo">
+      <div class="gauge-big-row">
+        <svg id="gauge-settings" width="150" height="88" viewBox="0 0 200 110"></svg>
+        <div class="gauge-big-readout">
+          <div class="level-name" id="level-name-settings">Standard</div>
+          <div class="level-desc" id="level-desc-settings"></div>
+        </div>
+      </div>
+      <div class="level-buttons" id="level-buttons"></div>
+    </div>
+    <div class="card-row blur-strength-row">
+      <div class="blur-strength-left">
+        <div><div class="ct">Blur strength</div><div class="cd">How heavy the blur looks when content is caught — separate from how much gets caught.</div></div>
+        <input type="range" min="1" max="5" value="4" id="blur-strength">
+      </div>
+      <div class="demo-photo-wrap">
+        <div class="demo-photo" id="demo-photo"></div>
+        <div class="demo-caption"><span>Preview</span><span class="reveal-chip" id="reveal-chip">Illustrative only</span></div>
+      </div>
+    </div>
+    <div class="card-row">
+      <div><div class="ct">Click to reveal</div><div class="cd">Let a click temporarily show blurred content, instead of leaving it blurred.</div></div>
+      <button class="toggle" id="toggle-reveal"><span class="knob"></span></button>
+    </div>
+  </div>
+
+  <div class="panel panel-hidden" id="p-platforms">
+    <h2>Platforms</h2>
+    <p class="lede">Turn filtering off entirely for a site, or keep it on but stop it from touching captions and comments.</p>
+    <div class="card-row">
+      <div class="toggle-row">
+        <div class="platform-icon ig">IG</div>
+        <div>
+          <div class="ct">Instagram</div>
+          <label class="sub-check"><input type="checkbox" id="ig-text" checked> Also filter captions and comments</label>
+        </div>
+      </div>
+      <button class="toggle" id="ig-enabled"><span class="knob"></span></button>
+    </div>
+    <div class="card-row">
+      <div class="toggle-row">
+        <div class="platform-icon rd">R</div>
+        <div>
+          <div class="ct">Reddit</div>
+          <label class="sub-check"><input type="checkbox" id="rd-text" checked> Also filter post titles and comments</label>
+        </div>
+      </div>
+      <button class="toggle" id="rd-enabled"><span class="knob"></span></button>
+    </div>
+  </div>
+
+  <div class="panel panel-hidden" id="p-words">
+    <h2>Content filters</h2>
+    <p class="lede">Use exact phrase filters for text and a natural-language preference for image-topic matching.</p>
+    <label class="ct" for="semantic-preference">Image-topic preference</label>
+    <p class="cd">Describe image topics you want to avoid. Example: images of war, violence, or shirtless men.</p>
+    <textarea id="semantic-preference" rows="3" placeholder="images of war, violence, or shirtless men"></textarea>
+    <label class="ct" for="tag-input">Exact text filters</label>
+    <p class="cd">These words or phrases are matched literally in captions, titles, and comments.</p>
+    <div class="tag-input-wrap" id="tag-wrap">
+      <input class="tag-input" id="tag-input" placeholder="Type a word or phrase and press Enter">
+    </div>
+  </div>
+
+  <div class="panel panel-hidden" id="p-activity">
+    <h2>Activity</h2>
+    <p class="lede">Nothing here leaves your browser — this is a local count, not a report sent anywhere.</p>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="num mono" id="stat-reviewed">0</div><div class="lbl">Posts reviewed</div></div>
+      <div class="stat-box"><div class="num mono" id="stat-blurred">0</div><div class="lbl">Blurred</div></div>
+      <div class="stat-box"><div class="num mono" id="stat-pct">0%</div><div class="lbl">Of everything you saw</div></div>
+    </div>
+    <div id="bars"></div>
+    <button class="popup-footer-btn" id="reset-stats" style="max-width:180px;">Reset activity</button>
+  </div>
+</div>
+
+<script src="../lib/storage.js"></script>
+<script src="../lib/gauge.js"></script>
+<script src="options.js"></script>
+</body>
+</html>

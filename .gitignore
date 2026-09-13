@@ -1,1 +1,9 @@
 cyhi-logs/.local/
+data/ledger/events.jsonl
+
+# Local ML models
+models/
+
+# Python generated files
+__pycache__/
+*.pyc
